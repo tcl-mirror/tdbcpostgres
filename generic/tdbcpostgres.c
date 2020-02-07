@@ -366,7 +366,7 @@ typedef struct ResultSetData {
 #define DecrResultSetRefCount(x)		\
     do {					\
 	ResultSetData* rs = (x);		\
-	if (--(rs->refCount) <= 0) {		\
+	if (rs->refCount-- <= 1) {		\
 	    DeleteResultSet(rs);		\
 	}					\
     } while(0)
