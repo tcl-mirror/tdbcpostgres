@@ -231,7 +231,7 @@ static const struct {
  */
 
 typedef struct PerInterpData {
-    int refCount;		    /* Reference count */
+    size_t refCount;		    /* Reference count */
     Tcl_Obj* literals[LIT__END];    /* Literal pool */
     Tcl_HashTable typeNumHash;	    /* Lookup table for type numbers */
 } PerInterpData;
@@ -242,7 +242,7 @@ typedef struct PerInterpData {
 #define DecrPerInterpRefCount(x)		\
     do {					\
 	PerInterpData* _pidata = x;		\
-	if ((--(_pidata->refCount)) <= 0) {	\
+	if (_pidata->refCount-- <= 1) {	\
 	    DeletePerInterpData(_pidata);	\
 	}					\
     } while(0)
@@ -256,7 +256,7 @@ typedef struct PerInterpData {
  */
 
 typedef struct ConnectionData {
-    int refCount;		/* Reference count. */
+    size_t refCount;		/* Reference count. */
     PerInterpData* pidata;	/* Per-interpreter data */
     PGconn* pgPtr;		/* Postgres  connection handle */
     int stmtCounter;		/* Counter for naming statements */
@@ -279,7 +279,7 @@ typedef struct ConnectionData {
 #define DecrConnectionRefCount(x)		\
     do {					\
 	ConnectionData* conn = x;		\
-	if ((--(conn->refCount)) <= 0) {	\
+	if (conn->refCount-- <= 1) {	\
 	    DeleteConnection(conn);		\
 	}					\
     } while(0)
@@ -294,7 +294,7 @@ typedef struct ConnectionData {
  */
 
 typedef struct StatementData {
-    int refCount;		/* Reference count */
+    size_t refCount;		/* Reference count */
     ConnectionData* cdata;	/* Data for the connection to which this
 				 * statement pertains. */
     Tcl_Obj* subVars;	        /* List of variables to be substituted, in the
@@ -318,7 +318,7 @@ typedef struct StatementData {
 #define DecrStatementRefCount(x)		\
     do {					\
 	StatementData* stmt = (x);		\
-	if (--(stmt->refCount) <= 0) {		\
+	if (stmt->refCount-- <= 1) {		\
 	    DeleteStatement(stmt);		\
 	}					\
     } while(0)
@@ -353,7 +353,7 @@ typedef struct ParamData {
  */
 
 typedef struct ResultSetData {
-    int refCount;		/* Reference count */
+    size_t refCount;		/* Reference count */
     StatementData* sdata;	/* Statement that generated this result set */
     PGresult* execResult;	/* Structure containing result of prepared statement execution */
     char* stmtName;		/* Name identyfing the statement */
