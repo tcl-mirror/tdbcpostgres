@@ -1305,7 +1305,7 @@ ConnectionConstructor(
     cdata->isolation = ISOL_NONE;
     cdata->readOnly = 0;
     IncrPerInterpRefCount(pidata);
-    Tcl_ObjectSetMetadata(thisObject, &connectionDataType, (ClientData) cdata);
+    Tcl_ObjectSetMetadata(thisObject, &connectionDataType, cdata);
 
     /* Configure the connection */
 
@@ -2303,7 +2303,7 @@ StatementConstructor(
 
     /* Attach the current statement data as metadata to the current object */
 
-    Tcl_ObjectSetMetadata(thisObject, &statementDataType, (ClientData) sdata);
+    Tcl_ObjectSetMetadata(thisObject, &statementDataType, sdata);
 
     return TCL_OK;
 
@@ -2714,7 +2714,7 @@ ResultSetConstructor(
     rdata->execResult = NULL;
     rdata->rowCount = 0;
     IncrStatementRefCount(sdata);
-    Tcl_ObjectSetMetadata(thisObject, &resultSetDataType, (ClientData) rdata);
+    Tcl_ObjectSetMetadata(thisObject, &resultSetDataType, rdata);
 
     /*
      * Find a statement handle that we can use to execute the SQL code.
@@ -3241,6 +3241,11 @@ ResultSetRowcountMethod(
  *-----------------------------------------------------------------------------
  */
 
+#ifndef STRINGIFY
+#  define STRINGIFY(x) STRINGIFY1(x)
+#  define STRINGIFY1(x) #x
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif  /* __cplusplus */
@@ -3375,7 +3380,7 @@ Tdbcpostgres_Init(
 	nameObj = Tcl_NewStringObj(ConnectionMethods[i]->name, -1);
 	Tcl_IncrRefCount(nameObj);
 	Tcl_NewMethod(interp, curClass, nameObj, 1, ConnectionMethods[i],
-			   (ClientData) NULL);
+			   NULL);
 	Tcl_DecrRefCount(nameObj);
     }
 
@@ -3395,7 +3400,7 @@ Tdbcpostgres_Init(
     Tcl_ClassSetConstructor(interp, curClass,
 			    Tcl_NewMethod(interp, curClass, NULL, 1,
 					  &StatementConstructorType,
-					  (ClientData) NULL));
+					  NULL));
 
     /* Attach the methods to the 'statement' class */
 
@@ -3403,7 +3408,7 @@ Tdbcpostgres_Init(
 	nameObj = Tcl_NewStringObj(StatementMethods[i]->name, -1);
 	Tcl_IncrRefCount(nameObj);
 	Tcl_NewMethod(interp, curClass, nameObj, 1, StatementMethods[i],
-			   (ClientData) NULL);
+			   NULL);
 	Tcl_DecrRefCount(nameObj);
     }
 
@@ -3423,7 +3428,7 @@ Tdbcpostgres_Init(
     Tcl_ClassSetConstructor(interp, curClass,
 			    Tcl_NewMethod(interp, curClass, NULL, 1,
 					  &ResultSetConstructorType,
-					  (ClientData) NULL));
+					  NULL));
 
     /* Attach the methods to the 'resultSet' class */
 
@@ -3431,7 +3436,7 @@ Tdbcpostgres_Init(
 	nameObj = Tcl_NewStringObj(ResultSetMethods[i]->name, -1);
 	Tcl_IncrRefCount(nameObj);
 	Tcl_NewMethod(interp, curClass, nameObj, 1, ResultSetMethods[i],
-			   (ClientData) NULL);
+			   NULL);
 	Tcl_DecrRefCount(nameObj);
     }
     nameObj = Tcl_NewStringObj("nextlist", -1);
