@@ -3,9 +3,9 @@
 # Makefile for TBDC Postgres interface
 #
 # Basic build, test and install
-#   nmake /s /nologo /f makefile.vc INSTALLDIR=c:\path\to\installdir TCLDIR=c:\path\to\tcl\source
-#   nmake /s /nologo /f makefile.vc INSTALLDIR=c:\path\to\installdir TCLDIR=c:\path\to\tcl\source test
-#   nmake /s /nologo /f makefile.vc INSTALLDIR=c:\path\to\installdir TCLDIR=c:\path\to\tcl\source install
+#   nmake /f makefile.vc INSTALLDIR=c:\path\to\installdir TCLDIR=c:\path\to\tcl\source
+#   nmake /f makefile.vc INSTALLDIR=c:\path\to\installdir TCLDIR=c:\path\to\tcl\source test
+#   nmake /f makefile.vc INSTALLDIR=c:\path\to\installdir TCLDIR=c:\path\to\tcl\source install
 #
 # For other build options (debug, static etc.)
 # See TIP 477 (https://core.tcl-lang.org/tips/doc/trunk/tip/477.md) for
@@ -20,6 +20,9 @@ PROJECT = tdbcpostgres
 # Tcl 8.6 etc. compile with /DUNICODE. TDBC pre-nmake reform compiled
 # without -DUNICODE. Keep that behaviour.
 USE_WIDECHAR_API  = 0
+
+PRJ_DEFINES = $(PRJ_DEFINES) -DTCL_NO_DEPRECATED=1
+PRJ_DEFINES = $(PRJ_DEFINES) -I$(TMP_DIR)
 
 !include "rules-ext.vc"
 
@@ -94,6 +97,13 @@ $(OUT_DIR)\pkgIndex.tcl: $(ROOT)\pkgIndex.tcl.in
 @PKG_LIB_FILE9@       $(PRJLIBNAME9)
 <<
 
+$(ROOT)\manifest.uuid:
+   copy $(WIN_DIR)\gitmanifest.in $(ROOT)\manifest.uuid
+   git rev-parse HEAD >>$(ROOT)\manifest.uuid
+
+$(TMP_DIR)\tdbcPostgresUuid.h:	$(ROOT)\manifest.uuid
+	copy $(WIN_DIR)\tdbcPostgresUuid.h.in+$(ROOT)\manifest.uuid $(TMP_DIR)\tdbcPostgresUuid.h
+
 test: setup $(PROJECT)
         @set TCL_LIBRARY=$(TCL_LIBRARY:\=/)
         @set TCLLIBPATH=$(OUT_DIR:\=/)
@@ -111,3 +121,6 @@ test: setup $(PROJECT)
 			{source {$(TDBC_BIN_DIR:\=/)/tdbc.tcl};load {$(TDBC_BIN_DIR:\=/)/$(TDBC_LIB_FILE)} tdbc}"
 !endif
 
+
+# Explicit dependency rules
+$(GENERICDIR)\tdbcpostgres.c : $(TMP_DIR)\tdbcPostgresUuid.h
